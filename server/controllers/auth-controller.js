@@ -17,9 +17,6 @@ const home = async (req, res) => {
   }
 };
 
-// *-------------------
-// Registration Logic
-// *-------------------
 // *-------------------------------
 //* User Registration Logic 📝
 // *-------------------------------
@@ -30,21 +27,19 @@ const home = async (req, res) => {
 // 5. Save to DB: 💾 Save user data to the database.
 // 6. Respond: ✅ Respond with "Registration Successful" or handle errors.
 
-const register = async (req, res) => {
+const register = async (req, res, next) => {
   try {
-    console.log(req.body);
     const { username, email, phone, password } = req.body;
 
+    // Check if a user with the given email already exists.
     const userExist = await User.findOne({ email });
 
     if (userExist) {
       return res.status(400).json({ message: "email already exists" });
     }
 
-    // hash the password
-    // const saltRound = 10;
-    // const hash_password = await bcrypt.hash(password, saltRound);
-
+    // Create a new user with the provided details.
+    // The password will be hashed automatically by the pre-save middleware in the User model.
     const userCreated = await User.create({
       username,
       email,
@@ -52,49 +47,51 @@ const register = async (req, res) => {
       password,
     });
 
+    // Respond with a success message, a JWT token, and the user's ID.
     res.status(201).json({
       msg: "registration successful",
       token: await userCreated.generateToken(),
       userId: userCreated._id.toString(),
     });
   } catch (error) {
-    // res.status(500).json("internal server error");
-    console.log(req.body);
+    // Pass any errors to the error handling middleware.
     next(error);
   }
 };
-
-// In most cases, converting _id to a string is a good practice because it ensures consistency and compatibility across different JWT libraries and systems. It also aligns with the expectation that claims in a JWT are represented as strings.
 
 // *-------------------------------
 //* User Login Logic 📝
 // *-------------------------------
 
-const login = async (req, res) => {
+const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
+    // Find the user by email.
     const userExist = await User.findOne({ email });
-    console.log(userExist);
 
+    // If the user does not exist, return an error.
     if (!userExist) {
       return res.status(400).json({ message: "Invalid Credentials " });
     }
 
-    // const user = await bcrypt.compare(password, userExist.password);
-    const user = await userExist.comparePassword(password);
+    // Compare the provided password with the hashed password in the database.
+    const isPasswordValid = await userExist.comparePassword(password);
 
-    if (user) {
+    if (isPasswordValid) {
+      // If the password is valid, respond with a success message, a JWT token, and the user's ID.
       res.status(200).json({
         msg: "Login Successful",
         token: await userExist.generateToken(),
         userId: userExist._id.toString(),
       });
     } else {
+      // If the password is not valid, return an error.
       res.status(401).json({ message: "Invalid email or password" });
     }
   } catch (error) {
-    res.status(500).json("internal server error");
+    // Pass any errors to the error handling middleware.
+    next(error);
   }
 };
 
@@ -102,13 +99,14 @@ const login = async (req, res) => {
 //* to send user data - User Logic 📝
 // *-------------------------------
 
-const user = async (req, res) => {
+const user = async (req, res, next) => {
   try {
+    // The user data is attached to the request object by the authMiddleware.
     const userData = req.user;
-    console.log(userData);
     return res.status(200).json({ userData });
   } catch (error) {
-    console.log(`error from the user route ${error}`);
+    // Pass any errors to the error handling middleware.
+    next(error);
   }
 };
 
