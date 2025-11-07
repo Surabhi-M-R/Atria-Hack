@@ -1,9 +1,9 @@
 import { NavLink } from "react-router-dom";
 import "./Navbar.css";
-import { useAuth } from "../store/auth";
+import { useAuth } from "../store/auth-context";
 
 export const Navbar = () => {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, isAdmin, isLoading } = useAuth();
   return (
     <>
       <header>
@@ -26,6 +26,11 @@ export const Navbar = () => {
               <li>
                 <NavLink to="/contact"> Contact </NavLink>
               </li>
+              {!isLoading && isLoggedIn && isAdmin && (
+                <li>
+                  <NavLink to="/admin/users"> Admin </NavLink>
+                </li>
+              )}
               {isLoggedIn ? (
                 <li>
                   <NavLink to="/logout">Logout</NavLink>

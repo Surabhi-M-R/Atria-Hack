@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
-import { useAuth } from "../store/auth";
+import { useCallback, useEffect, useState } from "react";
+import { useAuth } from "../store/auth-context";
 import { toast } from "react-toastify";
 
 export const AdminContacts = () => {
   const [contactData, setContactData] = useState([]);
   const { authorizationToken, API } = useAuth();
 
-  const getContactsData = async () => {
+  const getContactsData = useCallback(async () => {
     try {
       const response = await fetch(`${API}/api/admin/contacts`, {
         method: "GET",
@@ -22,11 +22,11 @@ export const AdminContacts = () => {
     } catch (error) {
       console.log(error);
     }
-  };
+  }, [API, authorizationToken]);
 
   // defining the funciton deleteContactById
 
-  const deleteContactById = async (id) => {
+  const deleteContactById = useCallback(async (id) => {
     try {
       const response = await fetch(`${API}/api/admin/contacts/delete/${id}`, {
         method: "DELETE",
@@ -43,11 +43,11 @@ export const AdminContacts = () => {
     } catch (error) {
       console.log(error);
     }
-  };
+  }, [API, authorizationToken, getContactsData]);
 
   useEffect(() => {
     getContactsData();
-  }, []);
+  }, [getContactsData]);
 
   return (
     <>

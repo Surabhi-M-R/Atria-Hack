@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useAuth } from "../store/auth";
+import { useCallback, useEffect, useState } from "react";
+import { useAuth } from "../store/auth-context";
 import { Link } from "react-router-dom";
 
 export const AdminUsers = () => {
@@ -7,7 +7,7 @@ export const AdminUsers = () => {
 
   const { authorizationToken, API } = useAuth();
 
-  const getAllUsersData = async () => {
+  const getAllUsersData = useCallback(async () => {
     try {
       const response = await fetch(`${API}/api/admin/users`, {
         method: "GET",
@@ -21,10 +21,10 @@ export const AdminUsers = () => {
     } catch (error) {
       console.log(error);
     }
-  };
+  }, [API, authorizationToken]);
 
   //   delelte the user on delete button
-  const deleteUser = async (id) => {
+  const deleteUser = useCallback(async (id) => {
     try {
       const response = await fetch(`${API}/api/admin/users/delete/${id}`, {
         method: "DELETE",
@@ -41,11 +41,11 @@ export const AdminUsers = () => {
     } catch (error) {
       console.log(error);
     }
-  };
+  }, [API, authorizationToken, getAllUsersData]);
 
   useEffect(() => {
     getAllUsersData();
-  }, []);
+  }, [getAllUsersData]);
   return (
     <>
       <section className="admin-users-section">

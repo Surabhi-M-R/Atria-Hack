@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAuth } from "../store/auth";
+import { useAuth } from "../store/auth-context";
 import { useEffect } from "react";
 
 const defaultContactFormData = {

@@ -1,4 +1,4 @@
-import { useAuth } from "../store/auth";
+import { useAuth } from "../store/auth-context";
 
 export const Service = () => {
   const { services } = useAuth();

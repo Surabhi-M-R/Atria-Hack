@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useAuth } from "../store/auth";
+import { useAuth } from "../store/auth-context";
 import { toast } from "react-toastify";
 
 export const AdminUpdate = () => {
@@ -15,7 +15,7 @@ export const AdminUpdate = () => {
   const { authorizationToken, API } = useAuth();
 
   //   get single user data
-  const getSingleUserData = async () => {
+  const getSingleUserData = useCallback(async () => {
     try {
       const response = await fetch(`${API}/api/admin/users/${params.id}`, {
         method: "GET",
@@ -23,21 +23,17 @@ export const AdminUpdate = () => {
           Authorization: authorizationToken,
         },
       });
-      const data = await response.json();
-      console.log(`users single data:  ${data}`);
-      setData(data);
-
-      //   if (response.ok) {
-      //     getAllUsersData();
-      //   }
+      const userData = await response.json();
+      console.log(`users single data:  ${userData}`);
+      setData(userData);
     } catch (error) {
       console.log(error);
     }
-  };
+  }, [API, authorizationToken, params.id]);
 
   useEffect(() => {
     getSingleUserData();
-  }, []);
+  }, [getSingleUserData]);
 
   const handleInput = (e) => {
     let name = e.target.name;

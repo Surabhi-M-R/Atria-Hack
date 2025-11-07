@@ -11,6 +11,7 @@ const errorMiddleware = require("./middlewares/error-middleware");
 const compression = require("compression");
 const rateLimit = require("express-rate-limit");
 const apicache = require("apicache");
+const User = require("./models/user-model");
 
 // Configure Cross-Origin Resource Sharing (CORS) to allow requests from specific origins.
 const corsOptions = {
@@ -75,9 +76,56 @@ app.use(errorMiddleware);
 // --- Server Initialization ---
 
 const PORT = process.env.PORT || 5001;
-// Connect to the database and start the server.
-connectDb().then(() => {
-  app.listen(PORT, () => {
-    console.log(`server is running at port: ${PORT}`);
+const ensureDefaultAdmin = async () => {
+  const {
+    ADMIN_DEFAULT_EMAIL,
+    ADMIN_DEFAULT_PASSWORD,
+    ADMIN_DEFAULT_USERNAME,
+    ADMIN_DEFAULT_PHONE,
+  } = process.env;
+
+  if (!ADMIN_DEFAULT_EMAIL || !ADMIN_DEFAULT_PASSWORD) {
+    console.warn(
+      "Skipping default admin creation. ADMIN_DEFAULT_EMAIL or ADMIN_DEFAULT_PASSWORD env vars are missing."
+    );
+    return;
+  }
+
+  const existingAdmin = await User.findOne({ email: ADMIN_DEFAULT_EMAIL });
+
+  if (existingAdmin) {
+    if (!existingAdmin.isAdmin) {
+      existingAdmin.isAdmin = true;
+      await existingAdmin.save();
+      console.info("Updated existing admin privileges for", ADMIN_DEFAULT_EMAIL);
+    }
+    return;
+  }
+
+  await User.create({
+    username: ADMIN_DEFAULT_USERNAME || "Administrator",
+    email: ADMIN_DEFAULT_EMAIL,
+    phone: ADMIN_DEFAULT_PHONE || "0000000000",
+    password: ADMIN_DEFAULT_PASSWORD,
+    isAdmin: true,
   });
-});
+
+  console.info("Default admin account created for", ADMIN_DEFAULT_EMAIL);
+};
+
+// Connect to the database and start the server.
+connectDb()
+  .then(async () => {
+    try {
+      await ensureDefaultAdmin();
+    } catch (error) {
+      console.error("Failed to ensure default admin user", error);
+    }
+
+    app.listen(PORT, () => {
+      console.log(`server is running at port: ${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error("Unable to start server", error);
+  });
