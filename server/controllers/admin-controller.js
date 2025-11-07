@@ -171,6 +171,19 @@ const getAllCareers = async (req, res, next) => {
   }
 };
 
+const getCareerById = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const job = await Career.findById(id);
+    if (!job) {
+      return res.status(404).json({ message: "Job posting not found" });
+    }
+    return res.status(200).json(job);
+  } catch (error) {
+    next(error);
+  }
+};
+
 const deleteCareerById = async (req, res, next) => {
   try {
     const id = req.params.id;
@@ -196,5 +209,6 @@ module.exports = {
   deleteBlogById,
   createCareer,
   getAllCareers,
+  getCareerById,
   deleteCareerById,
 };

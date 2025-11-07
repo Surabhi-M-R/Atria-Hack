@@ -18,6 +18,7 @@ import { AdminBlogs } from "./pages/Admin-Blogs";
 import { AdminCareers } from "./pages/Admin-Careers";
 import Blog from "./pages/Blog";
 import Careers from "./pages/Careers";
+import ApplyForJob from "./pages/ApplyForJob";
 
 const App = () => {
   return (
@@ -35,6 +36,7 @@ const App = () => {
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/careers" element={<Careers />} />
+          <Route path="/apply/:jobId" element={<ApplyForJob />} />
           <Route path="*" element={<Error />} />
           <Route path="/admin" element={<AdminLayout />}>
             <Route path="users" element={<AdminUsers />} />

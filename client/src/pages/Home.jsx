@@ -1,6 +1,26 @@
 import { Analytics } from "../components/Analytics";
+import { useEffect, useRef } from 'react';
 
 export const Home = () => {
+  const scriptRef = useRef(null);
+
+  useEffect(() => {
+    // Create script element
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jotfor.ms/agent/embedjs/019a5f4f57a2791290b4f8dc34c1fee59721/embed.js';
+    script.async = true;
+    
+    // Add script to document
+    document.body.appendChild(script);
+    scriptRef.current = script;
+
+    // Cleanup function to remove script on component unmount
+    return () => {
+      if (scriptRef.current) {
+        document.body.removeChild(scriptRef.current);
+      }
+    };
+  }, []);
   return (
     <>
       <main>

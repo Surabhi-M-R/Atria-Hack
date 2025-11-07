@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../store/auth-context";
 import { toast } from "react-toastify";
+import { Link } from "react-router-dom";
 
 const Careers = () => {
   const [jobs, setJobs] = useState([]);
@@ -59,7 +60,9 @@ const Careers = () => {
                     ))}
                   </ul>
                 </div>
-                <button className="apply-button">Apply Now</button>
+                <Link to={`/apply/${job._id}`} className="apply-button">
+                  Apply Now
+                </Link>
               </div>
             ))
           ) : (
