@@ -16,6 +16,8 @@ import { AdminUpdate } from "./pages/Admin-Update";
 import { AdminLogin } from "./pages/Admin-Login";
 import { AdminBlogs } from "./pages/Admin-Blogs";
 import { AdminCareers } from "./pages/Admin-Careers";
+import Blog from "./pages/Blog";
+import Careers from "./pages/Careers";
 
 const App = () => {
   return (
@@ -31,6 +33,8 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/logout" element={<Logout />} />
           <Route path="/admin-login" element={<AdminLogin />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/careers" element={<Careers />} />
           <Route path="*" element={<Error />} />
           <Route path="/admin" element={<AdminLayout />}>
             <Route path="users" element={<AdminUsers />} />

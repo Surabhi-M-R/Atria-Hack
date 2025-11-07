@@ -7,6 +7,8 @@ const authRoute = require("./router/auth-router");
 const contactRoute = require("./router/contact-router");
 const serviceRoute = require("./router/service-router");
 const adminRoute = require("./router/admin-router");
+const blogRoute = require("./router/blog-router");
+const careerRoute = require("./router/career-router");
 const connectDb = require("./utils/db");
 const errorMiddleware = require("./middlewares/error-middleware");
 const compression = require("compression");
@@ -66,6 +68,10 @@ app.use("/api/data", cache("10 minutes"), serviceRoute);
 
 // Mount the admin router for administrative tasks.
 app.use("/api/admin", adminRoute);
+
+// Public blog and career routes
+app.use("/api/blogs", blogRoute);
+app.use("/api/careers", careerRoute);
 
 
 // --- Error Handling ---
