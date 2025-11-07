@@ -42,11 +42,6 @@ export const AdminLayout = () => {
                 </NavLink>
               </li>
 
-              <li>
-                <NavLink to="/">
-                  <FaHome /> Home
-                </NavLink>
-              </li>
             </ul>
           </nav>
         </div>
