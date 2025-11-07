@@ -4,15 +4,15 @@ import { FaMessage } from "react-icons/fa6";
 import { useAuth } from "../../store/auth-context";
 
 export const AdminLayout = () => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, canAccessAdmin } = useAuth();
   console.log("admin layout ", user);
 
   if (isLoading) {
     return <h1>Loading ...</h1>;
   }
 
-  if (!user?.isAdmin) {
-    return <Navigate to="/" />;
+  if (!canAccessAdmin) {
+    return <Navigate to="/" replace />;
   }
 
   return (

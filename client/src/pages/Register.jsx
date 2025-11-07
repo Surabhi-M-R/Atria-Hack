@@ -12,7 +12,7 @@ export const Register = () => {
   });
 
   const navigate = useNavigate();
-  const { storeTokenInLS, API } = useAuth();
+  const { startUserSession, API } = useAuth();
 
   const URL = `${API}/api/auth/register`;
 
@@ -46,7 +46,7 @@ export const Register = () => {
 
       if (response.ok) {
         // stored the token in localhost
-        storeTokenInLS(res_data.token);
+        startUserSession(res_data.token);
         setUser({ username: "", email: "", phone: "", password: "" });
         toast.success("Registration successful");
         navigate("/");

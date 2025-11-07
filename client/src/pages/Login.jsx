@@ -10,7 +10,7 @@ export const Login = () => {
   });
 
   const navigate = useNavigate();
-  const { storeTokenInLS, API } = useAuth();
+  const { startUserSession, API } = useAuth();
 
   const URL = `${API}/api/auth/login`;
 
@@ -41,7 +41,7 @@ export const Login = () => {
 
       if (response.ok) {
         // alert("Login Successful");
-        storeTokenInLS(res_data.token);
+        startUserSession(res_data.token);
 
         setUser({ email: "", password: "" });
         toast.success("Login successful");

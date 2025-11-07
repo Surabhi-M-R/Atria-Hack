@@ -3,7 +3,7 @@ import "./Navbar.css";
 import { useAuth } from "../store/auth-context";
 
 export const Navbar = () => {
-  const { isLoggedIn, isAdmin, isLoading } = useAuth();
+  const { isLoggedIn, canAccessAdmin, isLoading } = useAuth();
   return (
     <>
       <header>
@@ -26,9 +26,13 @@ export const Navbar = () => {
               <li>
                 <NavLink to="/contact"> Contact </NavLink>
               </li>
-              {!isLoading && isLoggedIn && isAdmin && (
+              {!isLoading && (
                 <li>
-                  <NavLink to="/admin/users"> Admin </NavLink>
+                  {isLoggedIn && canAccessAdmin ? (
+                    <NavLink to="/admin/users"> Admin </NavLink>
+                  ) : (
+                    <NavLink to="/admin-login"> Admin </NavLink>
+                  )}
                 </li>
               )}
               {isLoggedIn ? (

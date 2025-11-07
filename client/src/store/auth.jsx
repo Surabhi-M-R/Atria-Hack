@@ -3,10 +3,13 @@ import { AuthContext } from "./auth-context";
 
 // eslint-disable-next-line react/prop-types
 export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(localStorage.getItem("token"));
+  const [token, setToken] = useState(localStorage.getItem("token") || "");
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [services, setServices] = useState([]);
+  const [isAdminSession, setIsAdminSession] = useState(
+    () => localStorage.getItem("adminSession") === "true"
+  );
   const authorizationToken = token ? `Bearer ${token}` : "";
 
   const configuredApi = import.meta.env.VITE_APP_URI_API?.trim();
@@ -32,26 +35,65 @@ export const AuthProvider = ({ children }) => {
     return response.json();
   }, []);
 
-  const storeTokenInLS = useCallback((serverToken) => {
-    setToken(serverToken);
-    return localStorage.setItem("token", serverToken);
+  const persistToken = useCallback((serverToken) => {
+    if (serverToken) {
+      setToken(serverToken);
+      localStorage.setItem("token", serverToken);
+    } else {
+      setToken("");
+      localStorage.removeItem("token");
+    }
   }, []);
 
-  let isLoggedIn = !!token;
-  console.log("isLoggedIN ", isLoggedIn);
+  const persistAdminSession = useCallback((value) => {
+    setIsAdminSession(value);
+    if (value) {
+      localStorage.setItem("adminSession", "true");
+    } else {
+      localStorage.removeItem("adminSession");
+    }
+  }, []);
 
-  // tackling the logout functionality
-  const LogoutUser = useCallback(() => {
-    setToken("");
+  const startUserSession = useCallback(
+    (serverToken) => {
+      persistToken(serverToken);
+      persistAdminSession(false);
+    },
+    [persistAdminSession, persistToken]
+  );
+
+  const startAdminSession = useCallback(
+    (serverToken) => {
+      persistToken(serverToken);
+      persistAdminSession(true);
+    },
+    [persistAdminSession, persistToken]
+  );
+
+  const clearSession = useCallback(() => {
+    persistToken("");
+    persistAdminSession(false);
     setUser(null);
     setServices([]);
-    return localStorage.removeItem("token");
-  }, []);
+  }, [persistAdminSession, persistToken]);
+
+  const isLoggedIn = Boolean(token);
+  console.log("isLoggedIN ", isLoggedIn);
+
+  const LogoutUser = useCallback(() => {
+    clearSession();
+  }, [clearSession]);
 
   // JWT AUTHENTICATION - to get the currently loggedIN user data
 
   const userAuthentication = useCallback(async () => {
     try {
+      if (!authorizationToken) {
+        setUser(null);
+        setIsLoading(false);
+        persistAdminSession(false);
+        return;
+      }
       setIsLoading(true);
       const response = await fetch(`${API}/api/auth/user`, {
         method: "GET",
@@ -78,8 +120,9 @@ export const AuthProvider = ({ children }) => {
       console.error("Error fetching user data", error);
       setUser(null);
       setIsLoading(false);
+      persistAdminSession(false);
     }
-  }, [API, authorizationToken, ensureJsonResponse]);
+  }, [API, authorizationToken, ensureJsonResponse, persistAdminSession]);
 
   // to fetch the services data from the database
   const getServices = useCallback(async () => {
@@ -114,11 +157,13 @@ export const AuthProvider = ({ children }) => {
   //please subs to thapa technical channel .. also world best js course is coming soon
 
   const isAdminUser = Boolean(user?.isAdmin);
+  const canAccessAdmin = isAdminUser && isAdminSession;
 
   const ctxValue = useMemo(
     () => ({
       isLoggedIn,
-      storeTokenInLS,
+      startUserSession,
+      startAdminSession,
       LogoutUser,
       user,
       services,
@@ -126,15 +171,20 @@ export const AuthProvider = ({ children }) => {
       isLoading,
       API,
       isAdmin: isAdminUser,
+      isAdminSession,
+      canAccessAdmin,
     }),
     [
       API,
       LogoutUser,
       authorizationToken,
+      canAccessAdmin,
       isLoading,
       isLoggedIn,
+      isAdminSession,
       services,
-      storeTokenInLS,
+      startAdminSession,
+      startUserSession,
       user,
       isAdminUser,
     ]
