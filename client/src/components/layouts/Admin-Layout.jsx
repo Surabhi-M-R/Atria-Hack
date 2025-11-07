@@ -1,6 +1,6 @@
 import { NavLink, Outlet, Navigate } from "react-router-dom";
-import { FaUser, FaHome, FaRegListAlt } from "react-icons/fa";
-import { FaMessage } from "react-icons/fa6";
+import { FaUser, FaHome, FaBriefcase } from "react-icons/fa";
+import { FaMessage, FaNewspaper } from "react-icons/fa6";
 import { useAuth } from "../../store/auth-context";
 
 export const AdminLayout = () => {
@@ -32,8 +32,13 @@ export const AdminLayout = () => {
                 </NavLink>
               </li>
               <li>
-                <NavLink to="/service">
-                  <FaRegListAlt /> Services
+                <NavLink to="/admin/blogs">
+                  <FaNewspaper /> Blogs
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/admin/careers">
+                  <FaBriefcase /> Careers
                 </NavLink>
               </li>
 

@@ -1,5 +1,7 @@
 const User = require("../models/user-model");
 const Contact = require("../models/contact-model");
+const Blog = require("../models/blog-model");
+const Career = require("../models/career-model");
 
 // *-------------------------------
 //* getAllUsers Logic 📝
@@ -110,6 +112,78 @@ const deleteContactById = async (req, res, next) => {
   }
 };
 
+// *-------------------------------
+//* Blog Management Logic 📝
+// *-------------------------------
+
+const createBlog = async (req, res, next) => {
+  try {
+    const payload = req.body;
+    const blog = await Blog.create(payload);
+    return res.status(201).json(blog);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getAllBlogs = async (req, res, next) => {
+  try {
+    const blogs = await Blog.find().sort({ createdAt: -1 });
+    return res.status(200).json(blogs ?? []);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deleteBlogById = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const result = await Blog.deleteOne({ _id: id });
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ message: "Blog post not found" });
+    }
+    return res.status(200).json({ message: "Blog post deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// *-------------------------------
+//* Career Management Logic 📝
+// *-------------------------------
+
+const createCareer = async (req, res, next) => {
+  try {
+    const payload = req.body;
+    const job = await Career.create(payload);
+    return res.status(201).json(job);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getAllCareers = async (req, res, next) => {
+  try {
+    const careers = await Career.find().sort({ createdAt: -1 });
+    return res.status(200).json(careers ?? []);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deleteCareerById = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const result = await Career.deleteOne({ _id: id });
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ message: "Job posting not found" });
+    }
+    return res.status(200).json({ message: "Job posting deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getAllUsers,
   getAllContacts,
@@ -117,4 +191,10 @@ module.exports = {
   getUserById,
   updateUserById,
   deleteContactById,
+  createBlog,
+  getAllBlogs,
+  deleteBlogById,
+  createCareer,
+  getAllCareers,
+  deleteCareerById,
 };

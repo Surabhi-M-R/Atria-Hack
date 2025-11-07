@@ -29,4 +29,22 @@ router
   .route("/contacts/delete/:id")
   .delete(authMiddleware, adminMiddleware, adminController.deleteContactById);
 
+router
+  .route("/blogs")
+  .get(authMiddleware, adminMiddleware, adminController.getAllBlogs)
+  .post(authMiddleware, adminMiddleware, adminController.createBlog);
+
+router
+  .route("/blogs/:id")
+  .delete(authMiddleware, adminMiddleware, adminController.deleteBlogById);
+
+router
+  .route("/careers")
+  .get(authMiddleware, adminMiddleware, adminController.getAllCareers)
+  .post(authMiddleware, adminMiddleware, adminController.createCareer);
+
+router
+  .route("/careers/:id")
+  .delete(authMiddleware, adminMiddleware, adminController.deleteCareerById);
+
 module.exports = router;
