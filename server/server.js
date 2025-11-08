@@ -1,5 +1,5 @@
-const path = require('path');
-require("dotenv").config({ path: path.join(__dirname, '..', '.env') });
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, "..", ".env") });
 const express = require("express");
 const cors = require("cors");
 const app = express();
@@ -12,6 +12,7 @@ const careerRoute = require("./router/career-router");
 const applicationRoute = require("./router/application-router");
 const connectDb = require("./utils/db");
 const errorMiddleware = require("./middlewares/error-middleware");
+const { verifyEmailConfig } = require("./utils/emailService");
 const compression = require("compression");
 const rateLimit = require("express-rate-limit");
 const apicache = require("apicache");
@@ -55,7 +56,6 @@ app.use(limiter);
 // Initialize caching middleware.
 let cache = apicache.middleware;
 
-
 // Middleware to parse incoming JSON requests.
 app.use(express.json());
 
@@ -75,12 +75,10 @@ app.use("/api/blogs", blogRoute);
 app.use("/api/careers", careerRoute);
 app.use("/api/applications", applicationRoute);
 
-
 // --- Error Handling ---
 
 // Use custom error handling middleware to catch and process errors.
 app.use(errorMiddleware);
-
 
 // --- Server Initialization ---
 
@@ -106,7 +104,10 @@ const ensureDefaultAdmin = async () => {
     if (!existingAdmin.isAdmin) {
       existingAdmin.isAdmin = true;
       await existingAdmin.save();
-      console.info("Updated existing admin privileges for", ADMIN_DEFAULT_EMAIL);
+      console.info(
+        "Updated existing admin privileges for",
+        ADMIN_DEFAULT_EMAIL
+      );
     }
     return;
   }
@@ -129,6 +130,16 @@ connectDb()
       await ensureDefaultAdmin();
     } catch (error) {
       console.error("Failed to ensure default admin user", error);
+    }
+
+    // Verify email configuration
+    try {
+      await verifyEmailConfig();
+    } catch (error) {
+      console.warn(
+        "Email configuration verification failed. Emails may not be sent:",
+        error.message
+      );
     }
 
     app.listen(PORT, () => {

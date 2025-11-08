@@ -49,6 +49,21 @@ export const Register = () => {
         startUserSession(res_data.token);
         setUser({ username: "", email: "", phone: "", password: "" });
         toast.success("Registration successful");
+
+        // Check email status and notify user
+        if (res_data.emailStatus) {
+          if (res_data.emailStatus.sent) {
+            toast.info("Welcome email sent! Please check your inbox.");
+          } else {
+            console.warn("Email not sent:", res_data.emailStatus);
+            toast.warning(
+              `Registration successful, but welcome email could not be sent. ${
+                res_data.emailStatus.error || "Please contact support."
+              }`
+            );
+          }
+        }
+
         navigate("/");
       } else {
         toast.error(

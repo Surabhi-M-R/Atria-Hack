@@ -1,5 +1,6 @@
 const User = require("../models/user-model");
 const bcrypt = require("bcryptjs");
+const { sendWelcomeEmail } = require("../utils/emailService");
 
 // *-------------------
 // Home Logic
@@ -47,11 +48,44 @@ const register = async (req, res, next) => {
       password,
     });
 
-    // Respond with a success message, a JWT token, and the user's ID.
+    // Send welcome email to the newly registered user
+    let emailStatus = { sent: false, error: null };
+    try {
+      console.log(`📧 Attempting to send welcome email to ${email}...`);
+      const emailResult = await sendWelcomeEmail(email, username);
+      if (!emailResult.success) {
+        console.error("❌ Failed to send welcome email:", emailResult.error);
+        console.error("Error code:", emailResult.code);
+        console.error("Response code:", emailResult.responseCode);
+        if (emailResult.details) {
+          console.error("Error details:", emailResult.details);
+        }
+        emailStatus = {
+          sent: false,
+          error: emailResult.error,
+          code: emailResult.code,
+          missingVars: emailResult.missingVars,
+        };
+      } else {
+        console.log("✅ Welcome email sent successfully to:", email);
+        emailStatus = { sent: true, messageId: emailResult.messageId };
+      }
+    } catch (emailError) {
+      console.error("❌ Error sending welcome email:", emailError);
+      console.error("Error stack:", emailError.stack);
+      emailStatus = {
+        sent: false,
+        error: emailError.message,
+        code: emailError.code,
+      };
+    }
+
+    // Respond with a success message, a JWT token, the user's ID, and email status
     res.status(201).json({
       msg: "registration successful",
       token: await userCreated.generateToken(),
       userId: userCreated._id.toString(),
+      emailStatus: emailStatus,
     });
   } catch (error) {
     // Pass any errors to the error handling middleware.

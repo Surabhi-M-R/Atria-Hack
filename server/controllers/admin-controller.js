@@ -2,6 +2,7 @@ const User = require("../models/user-model");
 const Contact = require("../models/contact-model");
 const Blog = require("../models/blog-model");
 const Career = require("../models/career-model");
+const { sendWelcomeEmail } = require("../utils/emailService");
 
 // *-------------------------------
 //* getAllUsers Logic 📝
@@ -11,6 +12,88 @@ const getAllUsers = async (req, res, next) => {
     const users = await User.find({}, { password: 0 });
     console.log(users);
     return res.status(200).json(users ?? []);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// *-------------------------------
+//* createUser Logic 📝 (Admin creates new user)
+// *-------------------------------
+const createUser = async (req, res, next) => {
+  try {
+    const { username, email, phone, password, isAdmin } = req.body;
+
+    // Validate required fields
+    if (!username || !email || !password) {
+      return res.status(400).json({
+        message: "Username, email, and password are required",
+      });
+    }
+
+    // Check if a user with the given email already exists
+    const userExist = await User.findOne({ email });
+
+    if (userExist) {
+      return res.status(400).json({ message: "Email already exists" });
+    }
+
+    // Create a new user with the provided details
+    const userCreated = await User.create({
+      username,
+      email,
+      phone: phone || "0000000000",
+      password,
+      isAdmin: isAdmin || false,
+    });
+
+    // Send welcome email to the newly created user
+    let emailStatus = { sent: false, error: null };
+    try {
+      console.log(`📧 [Admin] Attempting to send welcome email to ${email}...`);
+      const emailResult = await sendWelcomeEmail(email, username);
+      if (!emailResult.success) {
+        console.error(
+          "❌ [Admin] Failed to send welcome email:",
+          emailResult.error
+        );
+        console.error("Error code:", emailResult.code);
+        console.error("Response code:", emailResult.responseCode);
+        if (emailResult.details) {
+          console.error("Error details:", emailResult.details);
+        }
+        emailStatus = {
+          sent: false,
+          error: emailResult.error,
+          code: emailResult.code,
+          missingVars: emailResult.missingVars,
+        };
+      } else {
+        console.log("✅ [Admin] Welcome email sent successfully to:", email);
+        emailStatus = { sent: true, messageId: emailResult.messageId };
+      }
+    } catch (emailError) {
+      console.error("❌ [Admin] Error sending welcome email:", emailError);
+      console.error("Error stack:", emailError.stack);
+      emailStatus = {
+        sent: false,
+        error: emailError.message,
+        code: emailError.code,
+      };
+    }
+
+    // Return user data (without password) and email status
+    return res.status(201).json({
+      message: "User created successfully",
+      user: {
+        _id: userCreated._id,
+        username: userCreated.username,
+        email: userCreated.email,
+        phone: userCreated.phone,
+        isAdmin: userCreated.isAdmin,
+      },
+      emailStatus: emailStatus,
+    });
   } catch (error) {
     next(error);
   }
@@ -191,7 +274,9 @@ const deleteCareerById = async (req, res, next) => {
     if (result.deletedCount === 0) {
       return res.status(404).json({ message: "Job posting not found" });
     }
-    return res.status(200).json({ message: "Job posting deleted successfully" });
+    return res
+      .status(200)
+      .json({ message: "Job posting deleted successfully" });
   } catch (error) {
     next(error);
   }
@@ -199,6 +284,7 @@ const deleteCareerById = async (req, res, next) => {
 
 module.exports = {
   getAllUsers,
+  createUser,
   getAllContacts,
   deleteUserById,
   getUserById,
